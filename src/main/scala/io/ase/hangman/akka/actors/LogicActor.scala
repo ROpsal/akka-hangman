@@ -7,19 +7,19 @@
 
 package io.ase.hangman.akka.actors
 
-import akka.actor.{Actor, Props}
+import akka.actor.{Actor, ActorRef, Props}
 import io.ase.hangman.akka.hm
 
 
 object LogicActor {
-	def props() = Props(classOf[LogicActor])
+	def props(controller : ActorRef) = Props(classOf[LogicActor], controller)
 
 	case class NewLetter(letter : Char)
 	case class NewWord(word : String)
   case object ResetRequest
 }
 
-class LogicActor() extends Actor {
+class LogicActor(controller : ActorRef) extends Actor {
 
   var hangList : List[Char] = List()
   var guessList: List[Char] = List()
@@ -43,14 +43,14 @@ class LogicActor() extends Actor {
         guessSet = guessSet + letter
       }
 
-      context.parent ! ControllerActor.StatusChange(hangList, guessList, guessSet)
+      controller ! ControllerActor.StatusChange(hangList, guessList, guessSet)
     }
 
     case LogicActor.NewWord(word : String) =>
       setHangWord(word)
-      context.parent ! ControllerActor.StatusChange(hangList, guessList, guessSet)
+      controller ! ControllerActor.StatusChange(hangList, guessList, guessSet)
 
     case LogicActor.ResetRequest =>
-      context.parent ! ControllerActor.ResetRequest(hangList, guessList, guessSet)
+      controller ! ControllerActor.ResetRequest(hangList, guessList, guessSet)
 	}
 }

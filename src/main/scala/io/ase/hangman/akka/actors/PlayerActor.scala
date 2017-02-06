@@ -1,7 +1,7 @@
 ///
 //  Author: Richard B. Opsal, Ph.D.
 //
-//  The player logic actor for the Hangman game.
+//  The player input actor for the Hangman game.
 ///
 
 
@@ -13,13 +13,13 @@ import akka.actor.{Actor, ActorRef, Props}
 import io.ase.hangman.akka.hm
 
 object PlayerActor {
-	def props(logic : ActorRef) = Props(classOf[PlayerActor], logic)
+	def props(controller : ActorRef, logic : ActorRef) = Props(classOf[PlayerActor], controller, logic)
 
 	case class NewEntry(message : String, entry : String)
   case class ReadEntry(message : String)
 }
 
-class PlayerActor(logic : ActorRef) extends Actor {
+class PlayerActor(controller : ActorRef, logic : ActorRef) extends Actor {
 
   private val alphaSet = hm.alphaSet
 
@@ -28,7 +28,7 @@ class PlayerActor(logic : ActorRef) extends Actor {
 			entry.toUpperCase match {
         case letter if (1 == letter.length) && alphaSet.contains(letter(0)) => logic ! LogicActor.NewLetter(letter(0))
         case "NEW" => logic ! LogicActor.ResetRequest
-        case "EXIT" => context.parent ! ControllerActor.ExitGame
+        case "EXIT" => controller ! ControllerActor.ExitGame
         case _ => self ! PlayerActor.ReadEntry(message)
       }
     }

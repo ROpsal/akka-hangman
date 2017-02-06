@@ -43,8 +43,8 @@ class ControllerActor(val words : List[String]) extends Actor {
   }
 
   // Games' child actors.
-  val logic  = context.actorOf(LogicActor.props(), "Logic")
-  val player = context.actorOf(PlayerActor.props(logic), "Player")
+  private val logic  = context.actorOf(LogicActor.props(self), "Logic")
+  private val player = context.actorOf(PlayerActor.props(self, logic), "Player")
 
   def receive = {
     case ControllerActor.NewGame =>

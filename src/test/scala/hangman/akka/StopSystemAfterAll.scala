@@ -1,6 +1,4 @@
-/**
-  * Created by Richard on 2/3/2017.
-  */
+package hangman.akka
 
 import org.scalatest.{ Suite, BeforeAndAfterAll }
 import akka.testkit.TestKit
