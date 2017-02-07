@@ -34,9 +34,7 @@ class PlayerActorTest extends TestKit(ActorSystem("test-system"))
         logic.expectMsg(500 millis, LogicActor.ResetRequest)
       }
     }
-  }
 
-  "The Player actor" should {
     "send a ControllerActor.ExitGame to the Controller actor" when {
       "the PlayerActor.NewEntry value is 'exit'" in {
 
@@ -44,9 +42,7 @@ class PlayerActorTest extends TestKit(ActorSystem("test-system"))
         controller.expectMsg(500 millis, ControllerActor.ExitGame)
       }
     }
-  }
 
-  "The Player actor" should {
     "send a LogicActor.NewLetter to the Logic actor" when {
       "the PlayerActor.NewEntry value is an letter in the range A..Z." in {
 
@@ -54,5 +50,6 @@ class PlayerActorTest extends TestKit(ActorSystem("test-system"))
         logic.expectMsg(500 millis, LogicActor.NewLetter('A'))
       }
     }
+
   }
 }
