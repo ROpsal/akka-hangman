@@ -9,7 +9,7 @@ package hangman.akka
 import language.postfixOps
 import scala.concurrent.duration._
 
-import akka.testkit.{ImplicitSender, TestActorRef, TestKit, TestProbe}
+import akka.testkit.{TestActorRef, TestKit, TestProbe}
 import akka.actor.ActorSystem
 
 import org.scalatest.{ WordSpecLike, MustMatchers }
