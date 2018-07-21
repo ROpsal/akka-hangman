@@ -5,14 +5,14 @@
 ///
 
 
-package io.ase.hangman.akka.actors
+package io.ase.hangman.actors
 
 import akka.actor.{Actor, ActorRef, Props}
-import io.ase.hangman.akka.hm
+import io.ase.hm
 
 
 object LogicActor {
-	def props(controller : ActorRef) = Props(classOf[LogicActor], controller)
+	def props(controller : ActorRef) = Props(new LogicActor(controller))
 
 	case class NewLetter(letter : Char)
 	case class NewWord(word : String)
@@ -20,6 +20,9 @@ object LogicActor {
 }
 
 class LogicActor(controller : ActorRef) extends Actor {
+
+  // Import of object so we can use various case classes without scoping.
+  import LogicActor._
 
   var hangList : List[Char] = List()
   var guessList: List[Char] = List()
@@ -36,7 +39,7 @@ class LogicActor(controller : ActorRef) extends Actor {
   }
 
 	def receive = {
-    case LogicActor.NewLetter(letter : Char) => {
+    case NewLetter(letter : Char) =>
       if (hangList.contains(letter)) {
         guessList = hm.applyGuess(hangList, guessList, letter)
       } else {
@@ -44,13 +47,12 @@ class LogicActor(controller : ActorRef) extends Actor {
       }
 
       controller ! ControllerActor.StatusChange(hangList, guessList, guessSet)
-    }
 
-    case LogicActor.NewWord(word : String) =>
+    case NewWord(word : String) =>
       setHangWord(word)
       controller ! ControllerActor.StatusChange(hangList, guessList, guessSet)
 
-    case LogicActor.ResetRequest =>
+    case ResetRequest =>
       controller ! ControllerActor.ResetRequest(hangList, guessList, guessSet)
 	}
 }

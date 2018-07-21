@@ -14,8 +14,8 @@ import akka.actor.ActorSystem
 
 import org.scalatest.{ WordSpecLike, MustMatchers }
 
-import io.ase.hangman.akka.hm
-import io.ase.hangman.akka.actors.{ControllerActor, LogicActor}
+import io.ase.hm
+import io.ase.hangman.actors.{ControllerActor, LogicActor}
 
 class LogicActorTest extends TestKit(ActorSystem("test-system"))
   with WordSpecLike

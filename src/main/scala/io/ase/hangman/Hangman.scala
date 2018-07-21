@@ -8,7 +8,7 @@
 //      Logic
 ///
 
-package io.ase.hangman.akka
+package io.ase
 
 package object hm {
 
@@ -28,7 +28,7 @@ package object hm {
   }
 
   // Return a random word from the passed list.
-  def randomWord(words : List[String]) : String = {
+  def randomWord(words : Seq[String]) : String = {
     words( scala.util.Random.nextInt(words.length) )
   }
 
@@ -89,7 +89,7 @@ object Hangman extends App {
   } else {
     // Startup Akka system.
     import akka.actor.ActorSystem
-    import io.ase.hangman.akka.actors.ControllerActor
+    import io.ase.hangman.actors.ControllerActor
 
     // Implicitly used by the Akka actors.  Both are needed!
     val system = ActorSystem()

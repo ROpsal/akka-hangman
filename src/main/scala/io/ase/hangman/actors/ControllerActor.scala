@@ -5,13 +5,13 @@
 ///
 
 
-package io.ase.hangman.akka.actors
+package io.ase.hangman.actors
 
 import akka.actor.{Actor, PoisonPill, Props}
-import io.ase.hangman.akka.hm
+import io.ase.hm
 
 object ControllerActor {
-	def props(words : Seq[String]) = Props(classOf[ControllerActor], words)
+	def props(words : Seq[String]) = Props(new ControllerActor(words))
 
   case object NewGame
   case object ExitGame
@@ -20,7 +20,10 @@ object ControllerActor {
   case class StatusChange(hangList : List[Char], guessList : List[Char], guessSet : Set[Char])
 }
 
-class ControllerActor(val words : List[String]) extends Actor {
+class ControllerActor(val words : Seq[String]) extends Actor {
+
+  // Import of object so we can use various case classes without scoping.
+  import ControllerActor._
 
   // Tracks Hangman game progress.
   var wins   = 0
@@ -47,37 +50,33 @@ class ControllerActor(val words : List[String]) extends Actor {
   private val player = context.actorOf(PlayerActor.props(self, logic), "Player")
 
   def receive = {
-    case ControllerActor.NewGame =>
+    case NewGame =>
       preStart()
 
-    case ControllerActor.ExitGame => {
+    case ExitGame =>
       context.parent ! PoisonPill
-    }
 
-    case ControllerActor.ResetRequest(hangList, guessList, guessSet) => {
+    case ResetRequest(hangList, guessList, guessSet) =>
       if (hangList == guessList) wins += 1
       else if (0 < guessSet.size) losses += 1
 
       printSummary("Resetting Hangman game with new word.", hangList)
-      self ! ControllerActor.NewGame
-    }
+      self ! NewGame
 
-    case ControllerActor.StatusChange(hangList, guessList, guessSet) => {
+    case StatusChange(hangList, guessList, guessSet) =>
       if (hangList == guessList) {
         wins += 1
         printSummary("Congratulations on your win!", hangList)
-        self ! ControllerActor.NewGame
+        self ! NewGame
 
       } else if (hm.maxGuesses == guessSet.size) {
         losses += 1
         printSummary("Too Bad! Please try again.", hangList)
-        self ! ControllerActor.NewGame
+        self ! NewGame
 
       } else {
         val guessesLeft = hm.maxGuesses - guessSet.size
         player ! PlayerActor.ReadEntry(fmtinput.format(hm.wordJoin(guessList), guessesLeft))
-
       }
-    }
 	}
 }
