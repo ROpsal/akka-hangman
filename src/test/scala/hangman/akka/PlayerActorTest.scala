@@ -13,7 +13,7 @@ import akka.testkit.{ TestKit, TestProbe }
 import akka.actor.{ ActorSystem }
 import org.scalatest.{ WordSpecLike }
 
-import io.ase.hangman.akka.actors.{ ControllerActor, LogicActor, PlayerActor }
+import io.ase.hangman.actors.{ ControllerActor, LogicActor, PlayerActor }
 
 class PlayerActorTest extends TestKit(ActorSystem("test-system"))
   with WordSpecLike

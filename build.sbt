@@ -3,18 +3,14 @@ import NativePackagerHelper._
 name := "Akka-Hangman"
 
 version := "1.0.0"
-scalaVersion := "2.12.3"
+scalaVersion := "2.12.6"
 
 enablePlugins(JavaAppPackaging)
 
-fork in run := true
-connectInput in run := true
-outputStrategy := Some(StdoutOutput)
-
 libraryDependencies ++= {
-	val akkaVersion = "2.5.4"
+	val akkaVersion = "2.5.14"
 	val logbackVersion = "1.2.3"
-	val scalaTestVersion = "3.0.1"
+	val scalaTestVersion = "3.0.5"
 	Seq (
 		"com.typesafe.akka" %% "akka-actor"   % akkaVersion,
 		"com.typesafe.akka" %% "akka-slf4j"   % akkaVersion,
@@ -26,4 +22,4 @@ libraryDependencies ++= {
 }
 
 // For Universal packaging via sbt-native-packager.
-mappings in Universal ++= directory(sourceDirectory.value / "main" /"resources")
+mappings in Universal ++= directory(sourceDirectory.value / "main" / "resources")
