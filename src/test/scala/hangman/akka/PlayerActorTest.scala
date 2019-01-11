@@ -8,21 +8,19 @@ package hangman.akka
 
 import language.postfixOps
 import scala.concurrent.duration._
-import akka.testkit.{ TestKit, TestProbe }
-
-import akka.actor.{ ActorSystem }
-import org.scalatest.{ WordSpecLike }
-
+import akka.actor.testkit.typed.scaladsl.{ ActorTestKit, TestProbe }
+import akka.actor.typed.ActorRef
+import org.scalatest.{ BeforeAndAfterAll, MustMatchers, WordSpec }
 import io.ase.hangman.actors.{ ControllerActor, LogicActor, PlayerActor }
 
-class PlayerActorTest extends TestKit(ActorSystem("test-system"))
-  with WordSpecLike
-  with StopSystemAfterAll {
+class PlayerActorTest extends WordSpec with MustMatchers with BeforeAndAfterAll  {
 
-  val controller = TestProbe()
-  val logic = TestProbe()
-  val player = system.actorOf(PlayerActor.props(controller.ref, logic.ref), "Player")
+  val testKit: ActorTestKit = ActorTestKit()
+  val controller: TestProbe[ControllerActor.Command] = testKit.createTestProbe[ControllerActor.Command]
+  val logic: TestProbe[LogicActor.Command] = testKit.createTestProbe[LogicActor.Command]
+  val player: ActorRef[PlayerActor.Command] = testKit.spawn(PlayerActor(controller.ref, logic.ref), "Player")
 
+  override def afterAll(): Unit = testKit.shutdownTestKit()
 
   val dummyPrompt = "A dummy prompt : "
 
@@ -31,7 +29,7 @@ class PlayerActorTest extends TestKit(ActorSystem("test-system"))
       "the PlayerActor.NewEntry value is 'new'" in {
 
         player ! PlayerActor.NewEntry(dummyPrompt, "new")
-        logic.expectMsg(500 millis, LogicActor.ResetRequest)
+        logic.expectMessage[LogicActor.ResetRequest.type](500 millis, LogicActor.ResetRequest)
       }
     }
 
@@ -39,7 +37,7 @@ class PlayerActorTest extends TestKit(ActorSystem("test-system"))
       "the PlayerActor.NewEntry value is 'exit'" in {
 
         player ! PlayerActor.NewEntry(dummyPrompt, "exit")
-        controller.expectMsg(500 millis, ControllerActor.ExitGame)
+        controller.expectMessage[ControllerActor.ExitGame.type](500 millis, ControllerActor.ExitGame)
       }
     }
 
@@ -47,9 +45,8 @@ class PlayerActorTest extends TestKit(ActorSystem("test-system"))
       "the PlayerActor.NewEntry value is an letter in the range A..Z." in {
 
         player ! PlayerActor.NewEntry(dummyPrompt, "a")
-        logic.expectMsg(500 millis, LogicActor.NewLetter('A'))
+        logic.expectMessage[LogicActor.NewLetter](500 millis, LogicActor.NewLetter('A'))
       }
     }
-
   }
 }

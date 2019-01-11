@@ -8,22 +8,19 @@ package hangman.akka
 
 import language.postfixOps
 import scala.concurrent.duration._
-
-import akka.testkit.{TestActorRef, TestKit, TestProbe}
-import akka.actor.ActorSystem
-
-import org.scalatest.{ WordSpecLike, MustMatchers }
-
+import akka.actor.testkit.typed.scaladsl.{ ActorTestKit, TestProbe }
+import akka.actor.typed.ActorRef
+import org.scalatest.{ BeforeAndAfterAll, MustMatchers, WordSpec }
 import io.ase.hm
 import io.ase.hangman.actors.{ControllerActor, LogicActor}
 
-class LogicActorTest extends TestKit(ActorSystem("test-system"))
-  with WordSpecLike
-  with MustMatchers
-  with StopSystemAfterAll {
+class LogicActorTest extends WordSpec with MustMatchers with BeforeAndAfterAll  {
 
-  val controller = TestProbe()
-  val logicRef = TestActorRef[LogicActor](LogicActor.props(controller.ref), "Logic")
+  val testKit: ActorTestKit = ActorTestKit()
+  val controller: TestProbe[ControllerActor.Command] = testKit.createTestProbe[ControllerActor.Command]
+  val logicRef: ActorRef[LogicActor.Command] = testKit.spawn(LogicActor(controller.ref), "Logic")
+
+  override def afterAll(): Unit = testKit.shutdownTestKit()
 
   val word = "AMAZING"
   var hangList: List[Char] = hm.wordSplit(word.toUpperCase)
@@ -41,7 +38,7 @@ class LogicActorTest extends TestKit(ActorSystem("test-system"))
       "the LogicActor.NewWord value is changed." in {
 
         logicRef ! LogicActor.NewWord(word)
-        controller.expectMsgPF(500 millis) {
+        controller.expectMessageType[ControllerActor.StatusChange](500 millis) match {
           case ControllerActor.StatusChange(_hangList, _guessList, _guessSet) => {
             checkEquality(_hangList, _guessList, _guessSet)
           }
@@ -55,7 +52,7 @@ class LogicActorTest extends TestKit(ActorSystem("test-system"))
         if (!hangList.contains(letter)) guessSet = guessSet + letter
 
         logicRef ! LogicActor.NewLetter(letter)
-        controller.expectMsgPF(500 millis) {
+        controller.expectMessageType[ControllerActor.StatusChange](500 millis) match {
           case ControllerActor.StatusChange(_hangList, _guessList, _guessSet) => {
             checkEquality(_hangList, _guessList, _guessSet)
           }
@@ -69,7 +66,7 @@ class LogicActorTest extends TestKit(ActorSystem("test-system"))
         if (!hangList.contains(letter)) guessSet = guessSet + letter
 
         logicRef ! LogicActor.NewLetter(letter)
-        controller.expectMsgPF(500 millis) {
+        controller.expectMessageType[ControllerActor.StatusChange](500 millis) match {
           case ControllerActor.StatusChange(_hangList, _guessList, _guessSet) => {
             checkEquality(_hangList, _guessList, _guessSet)
           }
@@ -82,7 +79,7 @@ class LogicActorTest extends TestKit(ActorSystem("test-system"))
       "the LogicActor.ResetRequest is received." in {
 
         logicRef ! LogicActor.ResetRequest
-        controller.expectMsgPF(500 millis) {
+        controller.expectMessageType[ControllerActor.ResetRequest](500 millis) match {
           case ControllerActor.ResetRequest(_hangList, _guessList, _guessSet) => {
             checkEquality(_hangList, _guessList, _guessSet)
           }

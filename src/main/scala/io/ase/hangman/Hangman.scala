@@ -63,7 +63,6 @@ package object hm {
     val possiblePath : Option[String] = searchPaths find (i =>
       Files.isRegularFile(Paths.get(i, defaultName)))
 
-    if (possiblePath.isDefined) println(Option(Paths.get(possiblePath.get, defaultName).toString))
     if (possiblePath.isDefined) Option(Paths.get(possiblePath.get, defaultName).toString) else None
   }
 }
@@ -73,35 +72,46 @@ package object hm {
 // The Hangman application.
 ///
 
-object Hangman extends App {
+object HangmanMain {
 
-  // Cheery intro to the Hangman game.
-  println("Welcome to the Akka Hangman word guessing game.")
+  import akka.actor.typed.scaladsl.Behaviors
+  import akka.actor.typed.{ ActorSystem, Behavior, PostStop, Terminated }
 
-  // List of words to guess from.
-  val fname : Option[String] = if (args.isEmpty) hm.defaultFile else Option(args(0))
-  val words : Seq[String] = hm.wordList(fname)
+  import io.ase.hangman.actors.ControllerActor
 
-  if (words.isEmpty) {
-    // Can't play with word list!
-    println("\nHangman word list not loaded for game.  Sorry!")
+  sealed trait Command
 
-  } else {
-    // Startup Akka system.
-    import akka.actor.ActorSystem
-    import io.ase.hangman.actors.ControllerActor
+  def main(args: Array[String]): Unit = {
+    // Cheery intro to the Hangman game.
+    println("Welcome to the Akka Hangman word guessing game.")
 
-    // Implicitly used by the Akka actors.  Both are needed!
-    val system = ActorSystem()
-    val controller = system.actorOf(ControllerActor.props(words), "Controller")
-    val config = system.settings.config
+    // Obtain list of words to guess from.
+    val fname : Option[String] = if (args.isEmpty) hm.defaultFile else Option(args(0))
+    val words : Seq[String] = hm.wordList(fname)
 
-    // Wait on actor system to terminate itself.
-    import scala.concurrent.Await
-    import scala.concurrent.duration.Duration
-    Await.result(system.whenTerminated, Duration.Inf)
+    if (words.isEmpty) {
+      // Can't play without a word list!
+      println("\nHangman word list not loaded for game.  Sorry!")
 
-    // Cheery outro to the Hangman game.
-    println("\nThank you for playing Akka Hangman!")
+    } else {
+      // Start the game by starting the ActorSystem.
+      ActorSystem(HangmanMain(words), "hangman")
+    }
+  }
+
+  def apply(words : Seq[String]): Behavior[Command] = Behaviors.setup { context =>
+    val controller = context.spawn(ControllerActor(words), "controller")
+
+    context.watch(controller)
+    Behaviors.receiveSignal {
+      case (_, Terminated(_)) =>
+        // We're terminated.
+        Behaviors.stopped
+
+      case (_, PostStop) =>
+        // Leave a cheery outro to the Hangman game.
+        println("\nThank you for playing Akka Hangman!")
+        Behaviors.same
+    }
   }
 }

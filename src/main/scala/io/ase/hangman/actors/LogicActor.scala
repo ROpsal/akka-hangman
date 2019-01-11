@@ -7,22 +7,22 @@
 
 package io.ase.hangman.actors
 
-import akka.actor.{Actor, ActorRef, Props}
+import akka.actor.typed.{ActorRef, Behavior}
+import akka.actor.typed.scaladsl.{AbstractBehavior, Behaviors}
 import io.ase.hm
 
 
 object LogicActor {
-	def props(controller : ActorRef) = Props(new LogicActor(controller))
+  sealed trait Command
+	case class NewLetter(letter : Char) extends Command
+	case class NewWord(word : String) extends Command
+  case object ResetRequest extends Command
 
-	case class NewLetter(letter : Char)
-	case class NewWord(word : String)
-  case object ResetRequest
+	def apply(controller : ActorRef[ControllerActor.Command]) : Behavior[Command] =
+    Behaviors.setup(ctx => new LogicActor(controller))
 }
 
-class LogicActor(controller : ActorRef) extends Actor {
-
-  // Import of object so we can use various case classes without scoping.
-  import LogicActor._
+private class LogicActor(controller : ActorRef[ControllerActor.Command]) extends AbstractBehavior[LogicActor.Command] {
 
   var hangList : List[Char] = List()
   var guessList: List[Char] = List()
@@ -34,25 +34,28 @@ class LogicActor(controller : ActorRef) extends Actor {
     guessSet  = Set()
   }
 
-  override def preStart(): Unit = {
-    setHangWord("HANGMAN")
+  // Construction initialization.
+  setHangWord("HANGMAN")
+
+  import LogicActor._
+  override def onMessage(msg: Command): Behavior[Command] = {
+    msg match {
+      case NewLetter(letter: Char) =>
+        if (hangList.contains(letter)) {
+          guessList = hm.applyGuess(hangList, guessList, letter)
+        } else {
+          guessSet = guessSet + letter
+        }
+
+        controller ! ControllerActor.StatusChange(hangList, guessList, guessSet)
+
+      case NewWord(word: String) =>
+        setHangWord(word)
+        controller ! ControllerActor.StatusChange(hangList, guessList, guessSet)
+
+      case ResetRequest =>
+        controller ! ControllerActor.ResetRequest(hangList, guessList, guessSet)
+    }
+    this
   }
-
-	def receive = {
-    case NewLetter(letter : Char) =>
-      if (hangList.contains(letter)) {
-        guessList = hm.applyGuess(hangList, guessList, letter)
-      } else {
-        guessSet = guessSet + letter
-      }
-
-      controller ! ControllerActor.StatusChange(hangList, guessList, guessSet)
-
-    case NewWord(word : String) =>
-      setHangWord(word)
-      controller ! ControllerActor.StatusChange(hangList, guessList, guessSet)
-
-    case ResetRequest =>
-      controller ! ControllerActor.ResetRequest(hangList, guessList, guessSet)
-	}
 }
