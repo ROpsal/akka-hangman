@@ -7,8 +7,6 @@
 
 package io.ase.hangman.actors
 
-import akka.actor.PoisonPill
-import akka.actor.typed.scaladsl.adapter._
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.actor.typed.scaladsl.{AbstractBehavior, ActorContext, Behaviors}
 import io.ase.hm
@@ -61,7 +59,7 @@ private class ControllerActor(ctx : ActorContext[ControllerActor.Command], words
         printGreeting()
 
       case ExitGame =>
-        ctx.self.toUntyped ! PoisonPill
+        ctx.stop(ctx.self)
 
       case ResetRequest(hangList, guessList, guessSet) =>
         if (hangList == guessList) wins += 1
