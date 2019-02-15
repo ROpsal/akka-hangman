@@ -8,7 +8,7 @@ scalaVersion := "2.12.8"
 enablePlugins(JavaAppPackaging)
 
 libraryDependencies ++= {
-	val akkaVersion = "2.5.20"
+	val akkaVersion = "2.5.21"
 	val logbackVersion = "1.2.3"
 	val scalaTestVersion = "3.0.5"
 	Seq (
