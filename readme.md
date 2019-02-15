@@ -3,7 +3,7 @@
 ----------
 The Hangman word-guessing game hits a nice sweet spot when learning a new computer language. Not as trivial as "Hello World" but not overly difficult to implement.
 
-This version of Hangman was written utilizing the [Scala](https://www.scala-lang.org/index.html "https://www.scala-lang.org/index.html") language, version 2.12.8 and the [Akka](https://akka.io) Actor library, version 2.5.19.
+This version of Hangman was written utilizing the [Scala](https://www.scala-lang.org/index.html "https://www.scala-lang.org/index.html") language, version 2.12.8 and the [Akka](https://akka.io) Actor library, version 2.5.21.
 
 The original *master* branch utilizes the ```"akka-actor"``` untyped library.  Recently, the project was migrated over to the ```"akka-actor-typed"```  typed library and is stored in the *typed* branch.
 
@@ -34,7 +34,7 @@ akka-hangman-1.0.0.zip
 This is the server distributable package.  Unpack (unzip) to a select folder.  Then, on Windows, run
 
 ```
-bin\sc-server.bat
+akka-hangman.bat
 ```
 
 The Akka Hangman program is text based as shown by:
