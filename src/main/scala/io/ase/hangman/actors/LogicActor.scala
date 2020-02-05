@@ -8,7 +8,7 @@
 package io.ase.hangman.actors
 
 import akka.actor.typed.{ActorRef, Behavior}
-import akka.actor.typed.scaladsl.{AbstractBehavior, Behaviors}
+import akka.actor.typed.scaladsl.{AbstractBehavior, ActorContext, Behaviors}
 import io.ase.hm
 
 
@@ -18,11 +18,12 @@ object LogicActor {
 	case class NewWord(word : String) extends Command
   case object ResetRequest extends Command
 
-	def apply(controller : ActorRef[ControllerActor.Command]) : Behavior[Command] =
-    Behaviors.setup(ctx => new LogicActor(controller))
+	def apply(ctrl : ActorRef[ControllerActor.Command]) : Behavior[Command] =
+    Behaviors.setup(ctx => new LogicActor(ctx, ctrl))
 }
 
-private class LogicActor(controller : ActorRef[ControllerActor.Command]) extends AbstractBehavior[LogicActor.Command] {
+private class LogicActor(ctx : ActorContext[LogicActor.Command], ctrl : ActorRef[ControllerActor.Command])
+    extends AbstractBehavior[LogicActor.Command](ctx) {
 
   var hangList : List[Char] = List()
   var guessList: List[Char] = List()
@@ -47,14 +48,14 @@ private class LogicActor(controller : ActorRef[ControllerActor.Command]) extends
           guessSet = guessSet + letter
         }
 
-        controller ! ControllerActor.StatusChange(hangList, guessList, guessSet)
+        ctrl ! ControllerActor.StatusChange(hangList, guessList, guessSet)
 
       case NewWord(word: String) =>
         setHangWord(word)
-        controller ! ControllerActor.StatusChange(hangList, guessList, guessSet)
+        ctrl ! ControllerActor.StatusChange(hangList, guessList, guessSet)
 
       case ResetRequest =>
-        controller ! ControllerActor.ResetRequest(hangList, guessList, guessSet)
+        ctrl ! ControllerActor.ResetRequest(hangList, guessList, guessSet)
     }
     this
   }

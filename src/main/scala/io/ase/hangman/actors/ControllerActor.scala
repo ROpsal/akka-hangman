@@ -27,7 +27,7 @@ object ControllerActor {
 }
 
 private class ControllerActor(ctx : ActorContext[ControllerActor.Command], words : Seq[String])
-    extends AbstractBehavior[ControllerActor.Command] {
+    extends AbstractBehavior[ControllerActor.Command](ctx) {
 
   import ControllerActor._
 

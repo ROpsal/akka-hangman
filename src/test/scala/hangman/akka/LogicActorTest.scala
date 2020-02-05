@@ -10,11 +10,11 @@ import language.postfixOps
 import scala.concurrent.duration._
 import akka.actor.testkit.typed.scaladsl.{ ActorTestKit, TestProbe }
 import akka.actor.typed.ActorRef
-import org.scalatest.{ BeforeAndAfterAll, MustMatchers, WordSpec }
+import org.scalatest.{ BeforeAndAfterAll, matchers, wordspec }
 import io.ase.hm
 import io.ase.hangman.actors.{ControllerActor, LogicActor}
 
-class LogicActorTest extends WordSpec with MustMatchers with BeforeAndAfterAll  {
+class LogicActorTest extends wordspec.AnyWordSpec with matchers.must.Matchers with BeforeAndAfterAll  {
 
   val testKit: ActorTestKit = ActorTestKit()
   val controller: TestProbe[ControllerActor.Command] = testKit.createTestProbe[ControllerActor.Command]
