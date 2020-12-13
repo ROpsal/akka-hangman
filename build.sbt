@@ -1,13 +1,13 @@
 import NativePackagerHelper._
 
 ThisBuild / organization := "io.ase"
-ThisBuild / scalaVersion := "2.13.3"
+ThisBuild / scalaVersion := "2.13.4"
 ThisBuild / scalacOptions ++= Seq(
 	"-deprecation",
 	"-encoding", "UTF-8"
 )
 
-val akkaVersion = "2.6.8"
+val akkaVersion = "2.6.11"
 val logbackVersion = "1.2.3"
 val scalaTestVersion = "3.1.0"
 lazy val hangman = (project in file("."))
